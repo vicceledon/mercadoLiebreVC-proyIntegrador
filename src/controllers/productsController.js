@@ -17,90 +17,74 @@ const controller = {
   // Detail - Detail from one product
   detail: (req, res) => {
     // Do the magic
-    // let index = req.params.id - 1;
-    // let itemSelected = products[index];
-    let index = req.params.id;
-    let itemSelected = products.filter((item) => item.id == index);
+    let index = products.findIndex((item) => item.id == req.params.id);
+    let itemSelected = products[index];
 
-    res.render("detail", { itemSelected: itemSelected[0], toThousand });
+    res.render("detail", { itemSelected, toThousand });
   },
 
   // Create - Form to create
   create: (req, res) => {
     // Do the magic
-    let index = 0;
+    let newId = 0;
     products.forEach((item) => {
-      if (item.id > index) {
-        index = item.id;
+      if (item.id > newId) {
+        newId = item.id;
       }
     });
-    res.render("product-create-form", { index });
+    res.render("product-create-form", { newId });
   },
 
   // Create -  Method to store
   store: (req, res) => {
     // Do the magic
-    let index = req.params.id;
+    let newId = req.params.id;
     let newItem = {
-      id: index,
+      id: newId,
       ...req.body,
       image: "default-image.png",
     };
     products.push(newItem);
-    let newProducts = products;
-    fs.writeFileSync(productsFilePath, JSON.stringify(newProducts), "utf-8");
 
+    fs.writeFileSync(productsFilePath, JSON.stringify(products), "utf-8");
+
+    // res.send("item agregado."); // Esta línea es la solicitada en el requisito
     res.redirect("/products/");
   },
 
   // Update - Form to edit
   edit: (req, res) => {
     // Do the magic
-    // let index = req.params.id - 1;
-    // let itemSelected = products[index];
-    let index = req.params.id;
-    let itemSelected = products.filter((item) => item.id == index);
+    let index = products.findIndex((item) => item.id == req.params.id);
+    let itemSelected = products[index];
 
     res.render("product-edit-form", {
-      itemSelected: itemSelected[0],
+      itemSelected,
       toThousand,
     });
   },
   // Update - Method to update
   update: (req, res) => {
     // Do the magic
-    // let index = req.params.id - 1;
-    // let itemSelected = products[index];
-    let index = req.params.id;
-    let itemSelected = products.filter((item) => item.id == index);
-
+    let index = products.findIndex((item) => item.id == req.params.id);
     let info = req.body;
-    // products[index] = { ...itemSelected, ...info };
-    let newProducts = products.map((item) => {
-      if (item == itemSelected[0]) {
-        return { ...itemSelected[0], ...info };
-      } else {
-        return item;
-      }
-    });
-    fs.writeFileSync(productsFilePath, JSON.stringify(newProducts), "utf-8");
+
+    products[index] = { ...products[index], ...info };
+
+    fs.writeFileSync(productsFilePath, JSON.stringify(products), "utf-8");
 
     res.redirect("/products/");
-    // res.redirect("/"); //Esta opción no carga las modificaciones, es necesario recargar la página
   },
 
   // Delete - Delete one product from DB
   destroy: (req, res) => {
     // Do the magic
-    // let index = req.params.id - 1;
-    // let itemSelected = products[index];
-    // let newProducts = products.filter((item) => item != itemSelected);
-    let index = req.params.id;
-    let itemSelected = products.filter((item) => item.id == index);
-    let newProducts = products.filter((item) => item != itemSelected[0]);
+    let index = products.findIndex((item) => item.id == req.params.id);
+    products.splice(index, 1);
 
-    fs.writeFileSync(productsFilePath, JSON.stringify(newProducts), "utf-8");
+    fs.writeFileSync(productsFilePath, JSON.stringify(products), "utf-8");
 
+    // res.send("item eliminado."); // Esta línea es la solicitada en el requisito
     res.redirect("/products/");
   },
 };
